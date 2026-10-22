@@ -11,8 +11,11 @@ and sized by how much changed. No AI - just GitHub's own data drawn better.
 Backend (.NET 10 SDK required):
 
 ```bash
-dotnet run --project api/PrMap.Api
+dotnet run --project api/PrMap.Api --launch-profile https
 ```
+
+`--launch-profile https` matters: the default `http` profile skips the HTTPS port the web app
+proxies to. Run `dotnet dev-certs https --trust` once if the browser rejects the certificate.
 
 Frontend (Node LTS):
 
