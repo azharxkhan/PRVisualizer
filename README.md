@@ -91,11 +91,15 @@ GitHub's "list pull request files" endpoint shapes most of these.
 | Case | What the tool shows |
 | --- | --- |
 | More than 3,000 files | Banner: showing 3,000 of N files |
-| Binary file (image, PDF) | Box renders, diff panel says binary file |
-| Patch too large to return | Fallback with a link to the file on GitHub |
+| No patch, no line changes | Box renders, panel says no preview available |
+| No patch, but lines changed | "Too big to preview", with a link to GitHub |
 | Renamed file | Neutral box, old and new name both shown |
 | PR not found or no access | A friendly message, never the raw error |
 | GitHub rate limit hit | "GitHub is busy, try again in a minute" |
+
+A missing `patch` cannot be read as "binary". GitHub omits it both for oversized diffs and for
+files it declines to diff at all, and the response carries nothing that separates the two. The
+rows above split on the only signal available: whether any lines changed.
 
 ## Run locally
 
