@@ -32,13 +32,6 @@ public class GitHubFileServiceTests
     }
 
     [Fact(Skip = Todo)]
-    public void Stops_paging_when_a_short_page_comes_back()
-    {
-        // A page with fewer than PageSize items is the last one: no further call should be made.
-        Assert.Fail("Not implemented");
-    }
-
-    [Fact(Skip = Todo)]
     public void Sets_Truncated_once_the_GitHub_file_limit_is_reached()
     {
         // 3,000 files back means GitHub capped the response, and the banner needs to say so.

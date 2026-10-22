@@ -26,9 +26,12 @@ public sealed class GitHubFileService(
         // TODO Phase 1 — this is yours.
         //
         // 1. Build a client:        var client = await clientFactory.CreateAsync(context, cancellationToken);
-        // 2. Page through the files with ApiOptions { PageSize = PageSize, StartPage = n },
-        //    calling client.PullRequest.Files(reference.Owner, reference.Repo, reference.Number, apiOptions).
-        //    Stop when a page comes back with fewer than PageSize items, or once you hit GitHubFileLimit.
+        // 2. One call does the paging:
+        //    client.PullRequest.Files(reference.Owner, reference.Repo, reference.Number,
+        //                             new ApiOptions { PageSize = PageSize })
+        //    Octokit follows GitHub's Link headers to the end on its own. Verified against a
+        //    6,779-file PR: GitHub caps the list at 3,000 and page 31 returns 200 with an empty
+        //    array, so this terminates safely. PageSize only cuts the round trips from 100 to 30.
         // 3. Map each Octokit PullRequestFile to a ChangedFile. Note Octokit's property is
         //    PreviousFileName (capital N), and Patch is null for binary and oversized diffs.
         // 4. Set Truncated when the count reaches GitHubFileLimit.
