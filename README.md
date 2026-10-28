@@ -11,19 +11,25 @@ do they relate to each other?**
 
 No AI, no summarising, no guessing. Every box and every number comes from GitHub's own API.
 
-**Status: Phase 1 complete.** A public PR's files come back as JSON from the API, and CI is
-green. The views below are the design being built toward, drawn as diagrams rather than
-screenshots. They will be replaced with real screenshots as each phase lands.
+**Status: Phase 3 complete.** Paste a public pull request link and the map draws. The map below
+is a screenshot of the real thing; the other two views are still design diagrams, and they get
+replaced the same way as each phase lands.
 
 ## What we are building
 
-### The map view (Phases 3 and 4)
+### The map view (Phase 3, with the diff panel in Phase 4)
 
 Every changed file is a box. Box area is how many lines changed, colour is what happened to it,
 and boxes are nested inside the folder they live in, so a folder that took heavy change is
-visibly a heavy region of the map. Clicking a box opens that file's patch beside the map.
+visibly a heavy region of the map. In Phase 4, clicking a box opens that file's patch beside the
+map.
 
-![The map view: a summary bar above a treemap of changed files grouped by folder, with a diff panel to the right](docs/map-view.svg)
+![A 328-file Kubernetes pull request as a treemap: a summary bar reading 328 files changed, +25,605 and −8,625 lines and vendor as the heaviest folder, above nested folder regions of green, amber and red file boxes](docs/map-view.png)
+
+That is kubernetes/kubernetes#119000, 328 files. The green block on the left is one dependency
+bump; the scatter of small amber boxes on the right is everything else. A folder holding nothing
+but one more folder is folded into a single label, so `staging/src/k8s.io` costs one strip rather
+than three.
 
 Why a treemap and not a list: a list gives every file the same visual weight, so a 2-line config
 tweak looks as important as a 400-line rewrite. Area makes the weight obvious before you read a
@@ -82,8 +88,9 @@ it in stages:
 | 4 | Diff panel | Clicking any box shows its diff, or a clear "too big to preview" |
 | 5 | Sign in and private repos | A PR from a private repo renders, and no token appears in dev tools |
 
-Phases 0 and 1 are done, and the Phase 2 validation and rate limiting are in place. Phase 3, the
-map, is next.
+Phases 0 to 3 are done. Phase 4, the diff panel, is next: the map's boxes are already focusable
+and carry their file, so it is the panel itself and the two "no preview" cases that are
+missing.
 
 ## Known limits
 
@@ -95,7 +102,7 @@ GitHub's "list pull request files" endpoint shapes most of these.
 | No patch, no line changes | Box renders, panel says no preview available |
 | No patch, but lines changed | "Too big to preview", with a link to GitHub |
 | Renamed file | Neutral box, old and new name both shown |
-| PR not found or no access | A friendly message, never the raw error |
+| PR not found or no access | "That pull request could not be found. It may be private, or the link may be wrong." |
 | GitHub rate limit hit | "GitHub is busy, try again in a minute" |
 
 A missing `patch` cannot be read as "binary". GitHub omits it both for oversized diffs and for
