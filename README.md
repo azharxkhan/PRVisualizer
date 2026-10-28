@@ -11,9 +11,9 @@ do they relate to each other?**
 
 No AI, no summarising, no guessing. Every box and every number comes from GitHub's own API.
 
-**Status: Phase 0 complete.** The skeleton runs and CI is green. The views below are the design
-being built toward, drawn as diagrams rather than screenshots. They will be replaced with real
-screenshots as each phase lands.
+**Status: Phase 1 complete.** A public PR's files come back as JSON from the API, and CI is
+green. The views below are the design being built toward, drawn as diagrams rather than
+screenshots. They will be replaced with real screenshots as each phase lands.
 
 ## What we are building
 
@@ -82,7 +82,8 @@ it in stages:
 | 4 | Diff panel | Clicking any box shows its diff, or a clear "too big to preview" |
 | 5 | Sign in and private repos | A PR from a private repo renders, and no token appears in dev tools |
 
-Phase 0 is done. Phase 1 is next.
+Phases 0 and 1 are done, and the Phase 2 validation and rate limiting are in place. Phase 3, the
+map, is next.
 
 ## Known limits
 
