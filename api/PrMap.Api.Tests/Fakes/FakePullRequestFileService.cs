@@ -32,6 +32,7 @@ public sealed class FakePullRequestFileService : IPullRequestFileService
 
         return Task.FromResult(new PullRequestFiles(
             [new ChangedFile("src/one.cs", "modified", 3, 1, "@@ -1 +1 @@", null)],
-            Truncated: false));
+            Truncated: false,
+            HtmlUrl: reference.HtmlUrl));
     }
 }

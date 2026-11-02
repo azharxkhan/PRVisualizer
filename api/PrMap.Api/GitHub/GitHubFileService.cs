@@ -65,6 +65,6 @@ public sealed class GitHubFileService(
                 GitHubFileLimit);
         }
 
-        return new PullRequestFiles(files, truncated);
+        return new PullRequestFiles(files, truncated, reference.HtmlUrl);
     }
 }

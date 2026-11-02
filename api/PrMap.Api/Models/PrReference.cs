@@ -105,5 +105,9 @@ public sealed partial record PrReference
         return TryCreate(match.Groups["owner"].Value, match.Groups["repo"].Value, number, out reference, out error);
     }
 
+    /// <summary>The pull request's page on GitHub, built from the validated parts rather than
+    /// from whatever string the caller sent.</summary>
+    public string HtmlUrl => $"https://github.com/{Owner}/{Repo}/pull/{Number}";
+
     public override string ToString() => $"{Owner}/{Repo}#{Number}";
 }

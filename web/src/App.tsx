@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import './App.css'
+import type { ChangedFile } from './api/types'
 import { usePrFiles } from './api/usePrFiles'
 import { SummaryBar } from './SummaryBar'
+import { DiffPanel } from './diff/DiffPanel'
 import { Treemap } from './map/Treemap'
 import { LEGEND, statusColour } from './map/statusColour'
 
@@ -9,6 +11,7 @@ const EXAMPLE = 'https://github.com/octocat/Hello-World/pull/1'
 
 export default function App() {
   const [url, setUrl] = useState('')
+  const [selected, setSelected] = useState<ChangedFile | null>(null)
   const { state, load } = usePrFiles()
 
   return (
@@ -23,6 +26,8 @@ export default function App() {
       <form
         onSubmit={(event) => {
           event.preventDefault()
+          // A diff from the previous pull request has no business staying open over the new map.
+          setSelected(null)
           void load(url)
         }}
       >
@@ -58,7 +63,20 @@ export default function App() {
       {state.kind === 'loaded' && state.data.fileCount > 0 && (
         <section className="map">
           <SummaryBar data={state.data} />
-          <Treemap files={state.data.files} />
+          <div className={selected ? 'split open' : 'split'}>
+            <Treemap
+              files={state.data.files}
+              selected={selected}
+              onSelect={(file) => setSelected(file)}
+            />
+            {selected && (
+              <DiffPanel
+                file={selected}
+                htmlUrl={state.data.htmlUrl}
+                onClose={() => setSelected(null)}
+              />
+            )}
+          </div>
           <ul className="legend">
             {LEGEND.map(({ status, label }) => (
               <li key={status}>
@@ -67,7 +85,7 @@ export default function App() {
               </li>
             ))}
           </ul>
-          <p className="hint">Box area is lines changed. Clicking a file opens its diff in Phase 4.</p>
+          <p className="hint">Box area is lines changed. Click a file to read its diff.</p>
         </section>
       )}
     </main>
