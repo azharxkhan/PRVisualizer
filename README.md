@@ -11,9 +11,9 @@ do they relate to each other?**
 
 No AI, no summarising, no guessing. Every box and every number comes from GitHub's own API.
 
-**Status: Phase 4 complete.** Paste a public pull request link, read any file's diff beside the
-map. The map below is a screenshot of the real thing; the other two views are still design
-diagrams, and they get replaced the same way as each phase lands.
+**Status: Phase 5 complete, which is all of v1.** Paste a pull request link, read any file's
+diff beside the map, and sign in with GitHub to do the same for private repositories. The map
+below is a screenshot of the real thing; the other two views are still design diagrams.
 
 ## What we are building
 
@@ -87,8 +87,8 @@ it in stages:
 | 4 | Diff panel | Clicking any box shows its diff, or a clear "too big to preview" |
 | 5 | Sign in and private repos | A PR from a private repo renders, and no token appears in dev tools |
 
-Phases 0 to 4 are done, which is the whole of v1 bar signing in. Phase 5 is next: a GitHub App
-sign-in so private repositories render, with the token staying on the server.
+All five phases are done. What is next is the v2 call-movement view sketched above, starting
+with import edges read from the patch text.
 
 ## Known limits
 
@@ -128,9 +128,47 @@ npm install
 npm run dev
 ```
 
-Open the Vite URL. The page should show "API ok". The dev server proxies `/api` to the API's HTTPS
-port, so there are no CORS rules to configure. If the API's port differs from the one in
-`web/vite.config.ts`, take the correct one from `api/PrMap.Api/Properties/launchSettings.json`.
+Open the Vite URL. The dev server proxies `/api` to the API's HTTPS port, so there are no CORS
+rules to configure. If the API's port differs from the one in `web/vite.config.ts`, take the
+correct one from `api/PrMap.Api/Properties/launchSettings.json`.
+
+Public pull requests work as-is. Without a token GitHub allows 60 requests an hour per IP, and
+one 3,000-file pull request spends 30 of them, so for heavy use set an instance token:
+
+```bash
+dotnet user-secrets --project api/PrMap.Api set "GitHub:InstanceToken" "<token>"
+```
+
+### Signing in, for private repositories
+
+Register a GitHub App at <https://github.com/settings/apps/new>:
+
+| Field | Value |
+| --- | --- |
+| Callback URL | `http://localhost:5173/api/auth/callback` |
+| Webhook → Active | unchecked |
+| Request user authorization (OAuth) during installation | checked |
+| Permissions | Pull requests, Contents and Metadata, all **Read-only** |
+
+A GitHub App rather than an OAuth App because an OAuth App would need the `repo` scope, which
+grants read *and write* to every repository you own. Generate a client secret, then:
+
+```bash
+dotnet user-secrets --project api/PrMap.Api set "GitHub:ClientId" "<client id>"
+```
+
+```bash
+dotnet user-secrets --project api/PrMap.Api set "GitHub:ClientSecret" "<client secret>"
+```
+
+```bash
+dotnet user-secrets --project api/PrMap.Api set "GitHub:AuthMode" "GitHubApp"
+```
+
+Restart the API and the header shows "Sign in with GitHub". The browser gets an opaque,
+HttpOnly session cookie; the token itself stays on the server, encrypted with Data Protection,
+and is refreshed in the background when GitHub's eight-hour expiry comes round. Signing out, or
+restarting the API, ends the session.
 
 ## Layout
 

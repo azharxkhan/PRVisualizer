@@ -6,4 +6,7 @@ namespace PrMap.Api.GitHub;
 public interface IGitHubClientFactory
 {
     ValueTask<IGitHubClient> CreateAsync(HttpContext context, CancellationToken cancellationToken = default);
+
+    /// <summary>A client for one specific token, used during sign-in before a session exists.</summary>
+    IGitHubClient Create(string token);
 }

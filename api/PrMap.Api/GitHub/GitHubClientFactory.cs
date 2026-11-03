@@ -14,14 +14,10 @@ public sealed class GitHubClientFactory(
         HttpContext context,
         CancellationToken cancellationToken = default)
     {
-        var client = new GitHubClient(_product);
         var token = await tokenProvider.GetTokenAsync(context, cancellationToken);
-
-        if (!string.IsNullOrEmpty(token))
-        {
-            client.Credentials = new Credentials(token);
-        }
-
-        return client;
+        return string.IsNullOrEmpty(token) ? new GitHubClient(_product) : Create(token);
     }
+
+    public IGitHubClient Create(string token) =>
+        new GitHubClient(_product) { Credentials = new Credentials(token) };
 }

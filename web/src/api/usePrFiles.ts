@@ -6,7 +6,8 @@ export type PrFilesState =
   | { kind: 'idle' }
   | { kind: 'loading' }
   | { kind: 'loaded'; data: PullRequestFiles }
-  | { kind: 'error'; message: string }
+  /** couldBePrivate marks the not-found case, where signing in may be the missing piece. */
+  | { kind: 'error'; message: string; couldBePrivate: boolean }
 
 /**
  * Fetches one pull request's files. The URL goes to the server as pasted: parsing and validating
@@ -33,14 +34,22 @@ export function usePrFiles() {
       const body: unknown = await response.json().catch(() => null)
 
       if (!response.ok) {
-        setState({ kind: 'error', message: messageForResponse(response.status, body) })
+        setState({
+          kind: 'error',
+          message: messageForResponse(response.status, body),
+          couldBePrivate: response.status === 404,
+        })
         return
       }
 
       setState({ kind: 'loaded', data: body as PullRequestFiles })
     } catch (error) {
       if (controller.signal.aborted) return
-      setState({ kind: 'error', message: 'Could not reach the API. Is it running?' })
+      setState({
+        kind: 'error',
+        message: 'Could not reach the API. Is it running?',
+        couldBePrivate: false,
+      })
       void error
     }
   }, [])
