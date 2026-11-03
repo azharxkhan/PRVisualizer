@@ -147,6 +147,12 @@ form {
   background: var(--accent-bg);
 }
 
+.split[hidden],
+.legend[hidden] {
+  /* display on a class beats the browser's own rule for [hidden], so say it here. */
+  display: none;
+}
+
 .split {
   display: grid;
   gap: 16px;
@@ -156,6 +162,90 @@ form {
   @media (min-width: 900px) {
     &.open {
       grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
+    }
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+
+  button {
+    font: inherit;
+    font-size: 15px;
+    padding: 6px 14px;
+    color: var(--text);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text-h);
+    }
+
+    &.current {
+      color: var(--accent);
+      background: var(--accent-bg);
+      border-color: var(--accent-border);
+    }
+  }
+}
+
+/* Labels are HTML over the SVG, so long paths can ellipsize the way text should. */
+.edges {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 0;
+
+  svg {
+    display: block;
+    width: 100%;
+  }
+
+  ul {
+    position: absolute;
+    top: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font: 12px/1 var(--mono);
+  }
+
+  li {
+    position: absolute;
+    max-width: 24ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transform: translateY(-50%);
+    color: var(--text-h);
+  }
+
+  .importers {
+    left: 12px;
+    right: 55%;
+
+    li {
+      left: 0;
+    }
+  }
+
+  .modules {
+    left: 55%;
+    right: 12px;
+
+    li {
+      right: 0;
+      text-align: right;
+    }
+
+    .external {
+      color: var(--text);
+      opacity: 0.75;
+      font-style: italic;
     }
   }
 }
