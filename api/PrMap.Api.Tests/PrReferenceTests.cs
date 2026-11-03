@@ -103,4 +103,13 @@ public class PrReferenceTests
         Assert.True(PrReference.TryCreate("azharxkhan", "PRVisualizer", 42, out var reference, out _));
         Assert.Equal("azharxkhan/PRVisualizer#42", reference.ToString());
     }
+
+    [Fact]
+    public void HtmlUrl_points_at_the_pull_request_on_github()
+    {
+        Assert.True(PrReference.TryParseUrl(
+            "https://github.com/octocat/Hello-World/pull/42", out var reference, out _));
+
+        Assert.Equal("https://github.com/octocat/Hello-World/pull/42", reference.HtmlUrl);
+    }
 }

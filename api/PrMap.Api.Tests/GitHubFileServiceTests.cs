@@ -47,6 +47,16 @@ public class GitHubFileServiceTests
     }
 
     [Fact]
+    public async Task Carries_the_pull_requests_own_url_for_the_diff_panel_to_link_to()
+    {
+        var github = new FakePullRequestsClient([File("src/one.cs")]);
+
+        var result = await Service(github).GetFilesAsync(Reference, new DefaultHttpContext());
+
+        Assert.Equal("https://github.com/octocat/hello-world/pull/1", result.HtmlUrl);
+    }
+
+    [Fact]
     public async Task Asks_GitHub_for_the_largest_page_it_allows()
     {
         var github = new FakePullRequestsClient([File("src/one.cs")]);

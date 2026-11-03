@@ -100,6 +100,19 @@ form {
   background: var(--accent-bg);
 }
 
+.split {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+
+  /* Below this the two columns would each be too narrow to read, so the panel stacks under. */
+  @media (min-width: 900px) {
+    &.open {
+      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
+    }
+  }
+}
+
 .treemap {
   height: min(70vh, 640px);
   border: 1px solid var(--border);
@@ -137,6 +150,148 @@ form {
     &:focus-visible {
       outline: none;
     }
+
+    &.selected rect {
+      fill-opacity: 1;
+      stroke: var(--text-h);
+      stroke-width: 2px;
+    }
+  }
+}
+
+.diff {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: min(70vh, 640px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  > header {
+    display: flex;
+    gap: 12px;
+    align-items: start;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+
+    p {
+      margin: 0;
+    }
+  }
+
+  .path {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-h);
+    overflow-wrap: anywhere;
+  }
+
+  .renamed {
+    margin-top: 2px;
+    font-size: 13px;
+  }
+
+  .counts {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 6px;
+    font-size: 14px;
+  }
+
+  .chip {
+    padding: 1px 8px;
+    font-size: 12px;
+    color: #fff;
+    border-radius: 999px;
+  }
+
+  .added {
+    color: #2da44e;
+  }
+
+  .removed {
+    color: #cf222e;
+  }
+
+  .close {
+    flex: none;
+    width: 28px;
+    height: 28px;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--text);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: var(--border);
+      color: var(--text-h);
+    }
+  }
+}
+
+/* The diff scrolls inside the panel, so the page never grows with the size of a patch. */
+.diff-body {
+  flex: 1;
+  overflow: auto;
+  padding-bottom: 8px;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font: 12px/1.5 var(--mono);
+  }
+
+  caption {
+    padding: 6px 14px;
+    text-align: left;
+    color: var(--text);
+    background: var(--code-bg);
+    border-block: 1px solid var(--border);
+  }
+
+  td {
+    padding: 0 6px;
+    vertical-align: top;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .gutter {
+    width: 1%;
+    /* The code column wraps anywhere, which would otherwise break "14" across two lines. */
+    white-space: nowrap;
+    overflow-wrap: normal;
+    text-align: right;
+    color: var(--text);
+    opacity: 0.6;
+    user-select: none;
+  }
+
+  .code {
+    color: var(--text-h);
+  }
+
+  .add {
+    background: rgba(45, 164, 78, 0.15);
+  }
+
+  .remove {
+    background: rgba(207, 34, 46, 0.15);
+  }
+}
+
+.fallback {
+  margin: 0;
+  padding: 16px 14px;
+  font-size: 15px;
+
+  a {
+    color: var(--accent);
   }
 }
 

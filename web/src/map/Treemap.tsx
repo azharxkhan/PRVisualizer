@@ -1,11 +1,9 @@
 import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy'
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ChangedFile } from '../api/types'
+import { areaFor } from './area'
 import { groupByFolder, type TreeNode } from './groupByFolder'
 import { statusColour } from './statusColour'
-
-/** A file with no changed lines still gets a box, or it would vanish from the map. */
-const MIN_AREA = 1
 
 /** Below this a cell has no room for a label without overflowing its own box. */
 const LABEL_MIN_WIDTH = 46
@@ -14,10 +12,12 @@ const FOLDER_LABEL_HEIGHT = 16
 
 type Props = {
   files: ChangedFile[]
+  /** The file whose diff is open, outlined so the map says which one it is. */
+  selected?: ChangedFile | null
   onSelect?: (file: ChangedFile) => void
 }
 
-export function Treemap({ files, onSelect }: Props) {
+export function Treemap({ files, selected, onSelect }: Props) {
   const wrapper = useRef<HTMLDivElement>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
 
@@ -37,10 +37,16 @@ export function Treemap({ files, onSelect }: Props) {
   const cells = useMemo(() => {
     if (size.width < 1 || size.height < 1) return null
 
+    const totalChanges = files.reduce((sum, file) => sum + file.changes, 0)
+
     const root = hierarchy<TreeNode>(groupByFolder(files), (node) =>
       node.kind === 'folder' ? node.children : undefined,
     )
-      .sum((node) => (node.kind === 'file' ? Math.max(node.file.changes, MIN_AREA) : 0))
+      .sum((node) =>
+        node.kind === 'file'
+          ? areaFor(node.file.changes, totalChanges, size.width * size.height)
+          : 0,
+      )
       .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
 
     return treemap<TreeNode>()
@@ -86,10 +92,11 @@ export function Treemap({ files, onSelect }: Props) {
                 <g
                   key={file.filename}
                   transform={`translate(${node.x0},${node.y0})`}
-                  className="file"
+                  className={file.filename === selected?.filename ? 'file selected' : 'file'}
                   tabIndex={0}
                   role="button"
                   aria-label={label}
+                  aria-pressed={file.filename === selected?.filename}
                   onClick={() => onSelect?.(file)}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {

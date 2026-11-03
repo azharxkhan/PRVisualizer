@@ -6,7 +6,14 @@ namespace PrMap.Api.Models;
 /// True when GitHub capped the response at 3,000 files, so the map is showing a subset.
 /// The frontend renders a banner when this is set.
 /// </param>
-public sealed record PullRequestFiles(IReadOnlyList<ChangedFile> Files, bool Truncated)
+/// <param name="HtmlUrl">
+/// The pull request on GitHub. The diff panel links here for a file it cannot preview, and it
+/// comes from the validated reference so the browser never rebuilds it from what was pasted.
+/// </param>
+public sealed record PullRequestFiles(
+    IReadOnlyList<ChangedFile> Files,
+    bool Truncated,
+    string HtmlUrl)
 {
     public int FileCount => Files.Count;
     public int Additions => Files.Sum(f => f.Additions);

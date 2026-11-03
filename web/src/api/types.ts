@@ -22,4 +22,6 @@ export type PullRequestFiles = {
   fileCount: number
   additions: number
   deletions: number
+  /** The pull request on GitHub, resolved by the API from the validated reference. */
+  htmlUrl: string
 }
