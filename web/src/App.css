@@ -4,9 +4,56 @@ main {
   padding: 32px 20px 64px;
 }
 
+header {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: start;
+  justify-content: space-between;
+}
+
 h1 {
   color: var(--text-h);
   margin-bottom: 4px;
+}
+
+.sign-in {
+  flex: none;
+  padding: 8px 14px;
+  font-size: 15px;
+  color: var(--accent);
+  text-decoration: none;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: 6px;
+}
+
+.signed-in {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 0;
+  font-size: 15px;
+
+  span {
+    font-family: var(--mono);
+    color: var(--text-h);
+  }
+
+  button {
+    font: inherit;
+    font-size: 14px;
+    padding: 6px 10px;
+    color: var(--text);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--text-h);
+    }
+  }
 }
 
 .tagline {

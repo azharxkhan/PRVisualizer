@@ -2,6 +2,8 @@ import { useState } from 'react'
 import './App.css'
 import type { ChangedFile } from './api/types'
 import { usePrFiles } from './api/usePrFiles'
+import { useSession } from './api/useSession'
+import { SignIn } from './SignIn'
 import { SummaryBar } from './SummaryBar'
 import { DiffPanel } from './diff/DiffPanel'
 import { Treemap } from './map/Treemap'
@@ -13,14 +15,18 @@ export default function App() {
   const [url, setUrl] = useState('')
   const [selected, setSelected] = useState<ChangedFile | null>(null)
   const { state, load } = usePrFiles()
+  const { session, signOut } = useSession()
 
   return (
     <main>
       <header>
-        <h1>PR Map</h1>
-        <p className="tagline">
-          Paste a GitHub pull request link, get a map of everything that changed.
-        </p>
+        <div className="titles">
+          <h1>PR Map</h1>
+          <p className="tagline">
+            Paste a GitHub pull request link, get a map of everything that changed.
+          </p>
+        </div>
+        <SignIn session={session} onSignOut={() => void signOut()} />
       </header>
 
       <form
@@ -51,6 +57,9 @@ export default function App() {
       {state.kind === 'error' && (
         <p className="error" role="alert">
           {state.message}
+          {!session.signedIn && state.couldBePrivate && (
+            <> If it is in a private repository, signing in may be all it needs.</>
+          )}
         </p>
       )}
 

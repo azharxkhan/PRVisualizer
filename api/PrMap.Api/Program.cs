@@ -1,5 +1,6 @@
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using PrMap.Api.Auth;
 using PrMap.Api.Configuration;
 using PrMap.Api.Endpoints;
 using PrMap.Api.GitHub;
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
 builder.Services.AddMemoryCache();
+builder.Services.AddDataProtection();
+builder.Services.AddSingleton<ISessionStore, MemorySessionStore>();
+builder.Services.AddHttpClient<IGitHubOAuthClient, GitHubOAuthClient>();
 
 builder.Services
     .AddOptions<GitHubOptions>()
@@ -42,7 +46,9 @@ builder.Services.AddRateLimiter(rateLimiter =>
 
     rateLimiter.AddPolicy("per-user", context =>
         RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: context.User.Identity?.Name
+            // A signed-in user gets their own budget, so two people behind one address are not
+            // sharing twenty requests a minute.
+            partitionKey: SessionCookie.Read(context)
                 ?? context.Connection.RemoteIpAddress?.ToString()
                 ?? "anonymous",
             factory: _ => new FixedWindowRateLimiterOptions
@@ -63,6 +69,7 @@ app.UseHttpsRedirection();
 app.UseRateLimiter();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
+app.MapAuthEndpoints();
 app.MapPullRequestEndpoints();
 
 app.Run();

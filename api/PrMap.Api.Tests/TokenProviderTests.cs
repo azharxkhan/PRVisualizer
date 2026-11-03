@@ -1,7 +1,12 @@
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using PrMap.Api.Configuration;
+using PrMap.Api.Auth;
 using PrMap.Api.GitHub;
+using PrMap.Api.Tests.Fakes;
 
 namespace PrMap.Api.Tests;
 
@@ -56,10 +61,74 @@ public class TokenProviderTests
     }
 
     [Fact]
-    public async Task GitHubApp_is_not_built_yet_and_says_so()
+    public async Task GitHubApp_has_no_token_for_a_browser_with_no_session()
     {
-        var provider = new GitHubAppTokenProvider();
-        await Assert.ThrowsAsync<NotSupportedException>(
-            async () => await provider.GetTokenAsync(new DefaultHttpContext()));
+        var provider = new GitHubAppTokenProvider(
+            Sessions(), new FakeOAuthClient(), NullLogger<GitHubAppTokenProvider>.Instance);
+
+        Assert.Null(await provider.GetTokenAsync(new DefaultHttpContext()));
+        Assert.True(provider.SupportsPrivateRepositories);
+    }
+
+    [Fact]
+    public async Task GitHubApp_returns_the_session_token_while_it_is_still_good()
+    {
+        var sessions = Sessions();
+        var id = sessions.Create(new GitHubSession(
+            "gho_live", "ghr_refresh", DateTimeOffset.UtcNow.AddHours(8), "octocat"));
+        var oauth = new FakeOAuthClient();
+        var provider = new GitHubAppTokenProvider(
+            sessions, oauth, NullLogger<GitHubAppTokenProvider>.Instance);
+
+        Assert.Equal("gho_live", await provider.GetTokenAsync(ContextWithSession(id)));
+        Assert.Equal(0, oauth.RefreshCount);
+    }
+
+    [Fact]
+    public async Task GitHubApp_refreshes_a_token_that_has_run_out()
+    {
+        var sessions = Sessions();
+        var id = sessions.Create(new GitHubSession(
+            "gho_stale", "ghr_refresh", DateTimeOffset.UtcNow.AddSeconds(-1), "octocat"));
+        var oauth = new FakeOAuthClient();
+        var provider = new GitHubAppTokenProvider(
+            sessions, oauth, NullLogger<GitHubAppTokenProvider>.Instance);
+
+        var token = await provider.GetTokenAsync(ContextWithSession(id));
+
+        Assert.Equal("gho_refreshed_token", token);
+        Assert.Equal("ghr_refresh", oauth.LastRefreshToken);
+        // The new pair is stored, or the next request would refresh all over again.
+        Assert.Equal("gho_refreshed_token", sessions.Get(id)?.AccessToken);
+        Assert.Equal("ghr_new_refresh", sessions.Get(id)?.RefreshToken);
+    }
+
+    [Fact]
+    public async Task GitHubApp_drops_a_session_whose_refresh_is_refused()
+    {
+        var sessions = Sessions();
+        var id = sessions.Create(new GitHubSession(
+            "gho_stale", "ghr_refresh", DateTimeOffset.UtcNow.AddSeconds(-1), "octocat"));
+        var oauth = new FakeOAuthClient
+        {
+            RefreshResult = new TokenResult(null, null, default, "bad_refresh_token"),
+        };
+        var provider = new GitHubAppTokenProvider(
+            sessions, oauth, NullLogger<GitHubAppTokenProvider>.Instance);
+
+        Assert.Null(await provider.GetTokenAsync(ContextWithSession(id)));
+        Assert.Null(sessions.Get(id));
+    }
+
+    private static MemorySessionStore Sessions() => new(
+        new MemoryCache(new MemoryCacheOptions()),
+        DataProtectionProvider.Create(nameof(TokenProviderTests)),
+        Options.Create(new GitHubOptions()));
+
+    private static DefaultHttpContext ContextWithSession(string sessionId)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Cookie = $"{SessionCookie.Name}={sessionId}";
+        return context;
     }
 }

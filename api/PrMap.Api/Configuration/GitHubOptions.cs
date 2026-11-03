@@ -36,4 +36,19 @@ public sealed class GitHubOptions
 
     /// <summary>How long a fetched file list stays cached.</summary>
     public TimeSpan CacheDuration { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>Where the browser is sent to approve the app. Overridable so tests can stub it.</summary>
+    public string AuthorizeEndpoint { get; set; } = "https://github.com/login/oauth/authorize";
+
+    /// <summary>Where codes and refresh tokens are exchanged. Overridable so tests can stub it.</summary>
+    public string TokenEndpoint { get; set; } = "https://github.com/login/oauth/access_token";
+
+    /// <summary>Where the browser lands after a successful sign-in.</summary>
+    public string SignedInRedirect { get; set; } = "/";
+
+    /// <summary>
+    /// How long a session survives without use. GitHub's refresh tokens last six months, so this
+    /// is the shorter of the two limits and the one that decides when a user signs in again.
+    /// </summary>
+    public TimeSpan SessionLifetime { get; set; } = TimeSpan.FromDays(7);
 }
