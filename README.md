@@ -11,9 +11,9 @@ do they relate to each other?**
 
 No AI, no summarising, no guessing. Every box and every number comes from GitHub's own API.
 
-**Status: Phase 5 complete, which is all of v1.** Paste a pull request link, read any file's
-diff beside the map, and sign in with GitHub to do the same for private repositories. The map
-below is a screenshot of the real thing; the other two views are still design diagrams.
+**Status: v1 complete, and the first slice of v2 with it.** Paste a pull request link, read any
+file's diff beside the map, sign in with GitHub for private repositories, and switch to the
+Imports tab to see which dependencies the pull request added, removed or rewrote.
 
 ## What we are building
 
@@ -69,8 +69,17 @@ It needs the source of each changed file parsed at both commits, which means mor
 real parser per language (the TypeScript compiler API for the web side, Roslyn for C#). Earning
 it in stages:
 
-- Import edges from the patch text alone. An added `import` line is a new edge, a removed one is a
-  gone edge. No file fetches, no parser, and it draws most of the module-level arrows.
+- ~~Import edges from the patch text alone.~~ **Built.** An added `import` line is a new edge, a
+  removed one is an edge that went away, and a specifier both removed and added reads as a move
+  rather than as two opposing arrows. No file fetches and no parser: the patches are already in
+  the response the map draws from.
+
+![The Imports tab: changed files in a left column, the modules they import on the right, green curves between them, with vitest and react in a muted band below](docs/import-edges.png)
+
+  That is this repository's own #2, where the diff panel moved into `web/src/diff/`. TypeScript,
+  JavaScript and C# are read; a relative specifier is internal, and for C# a namespace the
+  repository declares itself is internal, which sorts `System.*` and `Octokit` out as packages
+  without a list to maintain.
 - Call edges inside a module. Needs full file contents and an AST walk, so it gets capped by file
   size, language and count.
 - Movement detection. Build the edge set at both commits and compare: same target with a
@@ -87,8 +96,9 @@ it in stages:
 | 4 | Diff panel | Clicking any box shows its diff, or a clear "too big to preview" |
 | 5 | Sign in and private repos | A PR from a private repo renders, and no token appears in dev tools |
 
-All five phases are done. What is next is the v2 call-movement view sketched above, starting
-with import edges read from the patch text.
+All five phases are done, and the first of the three v2 stages with them. Next is the second:
+call edges inside a module, which needs full file contents and an AST walk, capped by file size,
+language and count.
 
 ## Known limits
 
