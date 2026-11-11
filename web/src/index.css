@@ -107,3 +107,105 @@ code {
   color: var(--text-h);
   background: var(--code-bg);
 }
+
+/*
+ * Syntax colours. Written against the app's own tokens rather than imported from a Prism
+ * theme, so one palette covers light and dark and nothing clashes with the diff's red and
+ * green row tints. Hues are kept apart by role: keywords violet, strings green, numbers and
+ * constants amber, comments muted, types cyan.
+ */
+:root {
+  --syn-comment: #8b949e;
+  --syn-keyword: #a142f5;
+  --syn-string: #107c3f;
+  --syn-number: #b45309;
+  --syn-type: #0a7c94;
+  --syn-function: #7c3aed;
+  --syn-punctuation: #6b7280;
+  --syn-tag: #c2410c;
+  --syn-attr: #0a7c94;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --syn-comment: #7b8494;
+    --syn-keyword: #c792ea;
+    --syn-string: #7ee787;
+    --syn-number: #ffab70;
+    --syn-type: #66d9ef;
+    --syn-function: #b392f0;
+    --syn-punctuation: #8b949e;
+    --syn-tag: #ff9492;
+    --syn-attr: #79c0ff;
+  }
+}
+
+.token.comment,
+.token.prolog,
+.token.doctype,
+.token.cdata {
+  color: var(--syn-comment);
+  font-style: italic;
+}
+
+.token.punctuation,
+.token.operator {
+  color: var(--syn-punctuation);
+}
+
+.token.keyword,
+.token.rule,
+.token.important,
+.token.atrule {
+  color: var(--syn-keyword);
+}
+
+.token.string,
+.token.char,
+.token.attr-value,
+.token.regex {
+  color: var(--syn-string);
+}
+
+.token.number,
+.token.boolean,
+.token.constant,
+.token.symbol {
+  color: var(--syn-number);
+}
+
+.token.class-name,
+.token.builtin,
+.token.namespace {
+  color: var(--syn-type);
+}
+
+.token.function,
+.token.method {
+  color: var(--syn-function);
+}
+
+.token.tag,
+.token.selector,
+.token.deleted {
+  color: var(--syn-tag);
+}
+
+.token.attr-name,
+.token.property,
+.token.variable,
+.token.parameter {
+  color: var(--syn-attr);
+}
+
+.token.inserted {
+  color: var(--syn-string);
+}
+
+.token.bold {
+  font-weight: 600;
+}
+
+.token.italic {
+  font-style: italic;
+}
