@@ -4,6 +4,7 @@ import type { ChangedFile } from './api/types'
 import { usePrFiles } from './api/usePrFiles'
 import { useSession } from './api/useSession'
 import { STATIC_BUILD } from './api/mode'
+import { Logo } from './Logo'
 import { SignIn } from './SignIn'
 import { TokenBox } from './TokenBox'
 import { SummaryBar } from './SummaryBar'
@@ -40,10 +41,10 @@ export default function App() {
     <main>
       <header>
         <div className="titles">
+          <Logo />
           <h1>PR Map</h1>
-          <p className="tagline">
-            Paste a GitHub pull request link, get a map of everything that changed.
-          </p>
+          {/* One line, beside the title: the screen is for the map, not for the masthead. */}
+          <p className="tagline">a map of everything a pull request changed</p>
         </div>
         {STATIC_BUILD ? (
           <TokenBox />
@@ -97,7 +98,7 @@ export default function App() {
       )}
 
       {state.kind === 'loaded' && state.data.fileCount > 0 && (
-        <section className="map">
+        <section className="results">
           <SummaryBar data={state.data} />
 
           <div className="toolbar">

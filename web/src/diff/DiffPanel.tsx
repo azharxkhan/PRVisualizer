@@ -16,8 +16,11 @@ type Props = {
   onClose: () => void
 }
 
-/** Diff is always offered; the second view depends on what the file is. */
-type Mode = 'diff' | 'rendered'
+/**
+ * Which views a file can offer. The diff shows only the hunks GitHub sent, so "File" is there
+ * for the common case of needing the lines around a change, or the whole thing.
+ */
+type Mode = 'diff' | 'file' | 'rendered' | 'image'
 
 export function DiffPanel({ file, htmlUrl, onClose }: Props) {
   /**
@@ -38,31 +41,38 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
   const kind = kindOf(file.filename)
   const preview = previewFor(file)
 
-  // A removed file has no contents at the head commit, so there is nothing to render or show.
+  // A removed file has no contents at the head commit, so there is nothing to fetch or show.
   const present = file.status !== 'removed'
   // github.com's raw URL has no CORS headers, so the panel asks raw.githubusercontent instead.
-  const rawUrl = file.rawUrl ? rawContentUrl(file.rawUrl) : null
-  const canRender = present && rawUrl !== null && (kind === 'markdown' || kind === 'svg')
-  const canShowImage = present && rawUrl !== null && (kind === 'image' || kind === 'svg')
+  const rawUrl = present && file.rawUrl ? rawContentUrl(file.rawUrl) : null
 
-  const fallback: Mode = preview.kind === 'patch' ? 'diff' : 'rendered'
-  const mode = chosen?.filename === file.filename ? chosen.mode : fallback
+  const views: ReadonlyArray<{ id: Mode; label: string }> = [
+    ...(preview.kind === 'patch' ? [{ id: 'diff' as const, label: 'Diff' }] : []),
+    ...(rawUrl && kind === 'markdown' ? [{ id: 'rendered' as const, label: 'Rendered' }] : []),
+    ...(rawUrl && (kind === 'image' || kind === 'svg')
+      ? [{ id: 'image' as const, label: 'Image' }]
+      : []),
+    // Text and markdown read as a whole file; an image or a PDF has no lines to number.
+    ...(rawUrl && (kind === 'text' || kind === 'markdown' || kind === 'svg')
+      ? [{ id: 'file' as const, label: 'File' }]
+      : []),
+  ]
+
+  const fallback: Mode = views[0]?.id ?? 'diff'
+  const picked = chosen?.filename === file.filename ? chosen.mode : fallback
+  // A remembered choice may not exist for this file, so fall back rather than showing nothing.
+  const mode = views.some((view) => view.id === picked) ? picked : fallback
   const setMode = (next: Mode) => setChosen({ filename: file.filename, mode: next })
 
-  const wantsRaw = mode === 'rendered' && canRender && kind === 'markdown'
-  const raw = useRawFile(rawUrl, wantsRaw)
+  const raw = useRawFile(rawUrl, mode === 'rendered' || mode === 'file')
   const html = useMemo(
-    () => (raw.kind === 'loaded' ? renderMarkdown(raw.text) : null),
-    [raw],
+    () => (raw.kind === 'loaded' && mode === 'rendered' ? renderMarkdown(raw.text) : null),
+    [raw, mode],
   )
-
-  const second = canRender
-    ? { id: 'rendered' as const, label: kind === 'markdown' ? 'Rendered' : 'Image' }
-    : canShowImage
-      ? { id: 'rendered' as const, label: 'Image' }
-      : null
-
-  const showingDiff = mode === 'diff' || !second
+  const lines = useMemo(
+    () => (raw.kind === 'loaded' && mode === 'file' ? raw.text.split('\n') : null),
+    [raw, mode],
+  )
 
   return (
     <aside className="diff" aria-label={`Diff for ${file.filename}`}>
@@ -79,26 +89,20 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
           </p>
         </div>
         <div className="diff-actions">
-          {second && (
+          {views.length > 1 && (
             <div className="tabs small" role="tablist">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={showingDiff}
-                className={showingDiff ? 'current' : undefined}
-                onClick={() => setMode('diff')}
-              >
-                {kind === 'markdown' ? 'Source' : 'Diff'}
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={!showingDiff}
-                className={!showingDiff ? 'current' : undefined}
-                onClick={() => setMode('rendered')}
-              >
-                {second.label}
-              </button>
+              {views.map((view) => (
+                <button
+                  key={view.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === view.id}
+                  className={mode === view.id ? 'current' : undefined}
+                  onClick={() => setMode(view.id)}
+                >
+                  {view.label}
+                </button>
+              ))}
             </div>
           )}
           <button type="button" className="close" onClick={onClose} aria-label="Close the diff">
@@ -108,25 +112,44 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
       </header>
 
       <div className="diff-body">
-        {!showingDiff && kind === 'markdown' && (
+        {(mode === 'rendered' || mode === 'file') && (
           <>
             {raw.kind === 'loading' && <p className="fallback">Loading the file…</p>}
             {raw.kind === 'error' && <p className="fallback">{raw.message}</p>}
-            {html !== null && (
-              // marked's output, with raw HTML dropped and URLs restricted to http(s).
-              <div className="markdown" dangerouslySetInnerHTML={{ __html: html }} />
-            )}
           </>
         )}
 
-        {!showingDiff && kind !== 'markdown' && rawUrl && (
+        {html !== null && (
+          // marked's output, with raw HTML dropped and URLs restricted to http(s).
+          <div className="markdown" dangerouslySetInnerHTML={{ __html: html }} />
+        )}
+
+        {lines !== null && (
+          <table className="whole-file">
+            <caption>
+              The whole file at this pull request’s head commit, {format.format(lines.length)}{' '}
+              {lines.length === 1 ? 'line' : 'lines'}.
+            </caption>
+            <tbody>
+              {lines.map((line, index) => (
+                <tr key={index}>
+                  <td className="gutter">{index + 1}</td>
+                  <td className="code">{line || ' '}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {mode === 'image' && rawUrl && (
           <div className="image-preview">
             <img src={rawUrl} alt={file.filename} />
             <p className="caption">The file at this pull request’s head commit.</p>
           </div>
         )}
 
-        {showingDiff && preview.kind === 'patch' &&
+        {mode === 'diff' &&
+          preview.kind === 'patch' &&
           preview.hunks.map((hunk) => (
             <table key={hunk.header}>
               <caption>{hunk.header}</caption>
@@ -142,7 +165,7 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
             </table>
           ))}
 
-        {showingDiff && preview.kind === 'too-big' && (
+        {mode === 'diff' && preview.kind === 'too-big' && (
           <p className="fallback">
             Too big to preview. GitHub leaves the diff out of its response for a file this large.{' '}
             <a href={`${htmlUrl}/files`} target="_blank" rel="noreferrer noopener">
@@ -152,7 +175,7 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
           </p>
         )}
 
-        {showingDiff && preview.kind === 'none' && (
+        {mode === 'diff' && preview.kind === 'none' && (
           <p className="fallback">
             {binaryLabel(file.filename)
               ? `This is a ${binaryLabel(file.filename)} file, so there are no lines to diff.`
