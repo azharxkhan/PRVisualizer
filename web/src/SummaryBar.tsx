@@ -30,6 +30,19 @@ export function SummaryBar({ data }: { data: PullRequestFiles }) {
         </div>
       </dl>
 
+      {/* The numbers above are quick to scan but slow to interpret, so say it in a sentence too. */}
+      <p className="readout">
+        This pull request touches <strong>{format.format(data.fileCount)}</strong>{' '}
+        {data.fileCount === 1 ? 'file' : 'files'} and{' '}
+        <strong>{format.format(data.additions + data.deletions)}</strong> lines
+        {heaviest && (
+          <>
+            , most of it under <strong>{heaviest.name}</strong>
+          </>
+        )}
+        .
+      </p>
+
       {data.truncated && (
         <p className="banner" role="status">
           GitHub returns at most {format.format(GITHUB_FILE_LIMIT)} files, so this map shows{' '}

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { STATIC_BUILD } from './mode'
 
 export type Session = { signedIn: boolean; login: string | null }
 
@@ -12,6 +13,9 @@ export function useSession() {
   const [session, setSession] = useState<Session>(SIGNED_OUT)
 
   const refresh = useCallback(async () => {
+    // The static build has no API and no session: the user's own token stands in for one.
+    if (STATIC_BUILD) return
+
     try {
       const response = await fetch('/api/auth/me', { headers: { Accept: 'application/json' } })
       setSession(response.ok ? ((await response.json()) as Session) : SIGNED_OUT)

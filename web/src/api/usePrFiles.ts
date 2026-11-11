@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
+import { fetchPrFilesDirect, GitHubError } from './githubDirect'
 import { messageForResponse } from './messages'
+import { readToken, STATIC_BUILD } from './mode'
 import type { PullRequestFiles } from './types'
 
 export type PrFilesState =
@@ -26,6 +28,13 @@ export function usePrFiles() {
     setState({ kind: 'loading' })
 
     try {
+      // On GitHub Pages there is no API to call, so the browser asks GitHub itself.
+      if (STATIC_BUILD) {
+        const data = await fetchPrFilesDirect(url, readToken(), controller.signal)
+        setState({ kind: 'loaded', data })
+        return
+      }
+
       const response = await fetch(`/api/prs/files?url=${encodeURIComponent(url)}`, {
         signal: controller.signal,
         headers: { Accept: 'application/json' },
@@ -45,12 +54,19 @@ export function usePrFiles() {
       setState({ kind: 'loaded', data: body as PullRequestFiles })
     } catch (error) {
       if (controller.signal.aborted) return
+
+      if (error instanceof GitHubError) {
+        setState({ kind: 'error', message: error.message, couldBePrivate: error.couldBePrivate })
+        return
+      }
+
       setState({
         kind: 'error',
-        message: 'Could not reach the API. Is it running?',
+        message: STATIC_BUILD
+          ? 'Could not reach GitHub. Check your connection and try again.'
+          : 'Could not reach the API. Is it running?',
         couldBePrivate: false,
       })
-      void error
     }
   }, [])
 

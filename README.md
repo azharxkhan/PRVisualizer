@@ -12,8 +12,25 @@ do they relate to each other?**
 No AI, no summarising, no guessing. Every box and every number comes from GitHub's own API.
 
 **Status: v1 complete, and the first slice of v2 with it.** Paste a pull request link, read any
-file's diff beside the map, sign in with GitHub for private repositories, and switch to the
-Imports tab to see which dependencies the pull request added, removed or rewrote.
+file's diff beside the map, sign in with GitHub for private repositories, and switch to the List
+or Imports tab for a ranked file list or the dependencies the pull request added, removed or
+rewrote.
+
+## Try it
+
+**<https://azharxkhan.github.io/PRVisualizer/>** — no install, no sign-up. Paste any public pull
+request link and it draws. See [Hosting](#hosting) for what that build can and cannot do.
+
+## Three ways to read a pull request
+
+| Tab | Answers | Read it when |
+| --- | --- | --- |
+| **Map** | Where is the weight? | You are new to the change and need somewhere to start |
+| **List** | What exactly changed? | You want every file, biggest first, with no decoding |
+| **Imports** | What now depends on what? | The change moved code between modules |
+
+All three share one palette: green added, amber modified, red removed, violet renamed. Clicking
+a file in either the map or the list opens its diff beside it.
 
 ## What we are building
 
@@ -33,6 +50,11 @@ folder holding nothing but one more folder is folded into a single label, so a p
 Why a treemap and not a list: a list gives every file the same visual weight, so a 2-line config
 tweak looks as important as a 400-line rewrite. Area makes the weight obvious before you read a
 single filename.
+
+The List tab is there anyway, because the map's strength is also its weakness. Area answers
+"where is the weight" faster than anything else, but a reader who wants the plain facts should
+not have to estimate rectangles: the list gives the same files ranked by size, each with its
+counts and a bar on one shared scale. Both views feed the same diff panel.
 
 The four numbers along the top are the summary: files changed, lines added, lines removed, and
 the folder with the most change.
@@ -95,6 +117,7 @@ it in stages:
 | 3 | The map | A 50-file PR renders as a readable map with folder labels |
 | 4 | Diff panel | Clicking any box shows its diff, or a clear "too big to preview" |
 | 5 | Sign in and private repos | A PR from a private repo renders, and no token appears in dev tools |
+| 6 | Public hosting | The Pages build maps a public PR with no server running |
 
 All five phases are done, and the first of the three v2 stages with them. Next is the second:
 call edges inside a module, which needs full file contents and an AST walk, capped by file size,
@@ -180,6 +203,45 @@ HttpOnly session cookie; the token itself stays on the server, encrypted with Da
 and is refreshed in the background when GitHub's eight-hour expiry comes round. Signing out, or
 restarting the API, ends the session.
 
+## Hosting
+
+GitHub Pages serves files. It cannot run the .NET API, so the deployed site is a **static
+build** that skips the API and calls `api.github.com` from the browser instead. GitHub's REST
+API sends CORS headers, so this works; what changes is who holds the token.
+
+| | Full build (`npm run dev`) | Static build (GitHub Pages) |
+| --- | --- | --- |
+| Who calls GitHub | The .NET API | The browser |
+| Who holds the token | The server, in an encrypted session | Nobody, or the user's own token in `localStorage` |
+| Private repositories | Sign in with the GitHub App | Only with a token you paste |
+| Anonymous rate limit | 60/hour per **server** IP, plus a 5-minute cache | 60/hour per **visitor** IP |
+| Rate limiting and validation | Server-side, enforced | Client-side only |
+
+The three rules above still hold where they can: the static build has no server to leak a token
+from, and the token a user pastes is theirs, kept in their own browser and sent only to
+`api.github.com`. What it loses is the server-side cache and rate limiter, and the GitHub App's
+read-only scoping — a pasted personal access token is as narrow as the user makes it, so the
+hint in the app links to the fine-grained token page.
+
+**If you want the full build hosted**, Pages is the wrong host: run the API somewhere that runs
+containers (Azure Container Apps, Fly.io, Render) and point the frontend at it. The split is
+worth keeping either way, because a static Pages build is the version that costs nothing and
+needs no secrets.
+
+### Turning Pages on
+
+`.github/workflows/pages.yml` builds and deploys on every push to `main`. It needs Pages
+switched on once, by hand:
+
+**Settings → Pages → Build and deployment → Source: GitHub Actions.**
+
+That is the only manual step. The workflow sets `VITE_STATIC=true` so the browser transport is
+used, and `BASE_PATH=/<repo>/` so a project site's asset URLs resolve. To build it locally:
+
+```bash
+cd web && VITE_STATIC=true BASE_PATH=/PRVisualizer/ npm run build
+```
+
 ## Layout
 
 ```text
@@ -187,8 +249,9 @@ api/
   PrMap.Api/          .NET 10 Web API, owns the GitHub token
   PrMap.Api.Tests/    xUnit tests
 web/                  React + TypeScript (Vite)
+  src/api/mode.ts     picks the API or the browser-direct transport
 docs/                 diagrams used in this README
-.github/workflows/    CI: builds and tests both halves
+.github/workflows/    ci.yml builds and tests both halves; pages.yml deploys the static build
 ```
 
 ## Stack
