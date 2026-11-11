@@ -7,13 +7,15 @@ namespace PrMap.Api.Models;
 /// <param name="Deletions">Lines removed.</param>
 /// <param name="Patch">The unified diff, or null for binary files and oversized diffs.</param>
 /// <param name="PreviousFilename">The old path, set only when <paramref name="Status"/> is renamed.</param>
+/// <param name="RawUrl">The file's contents at the head commit. Lets the panel show an image.</param>
 public sealed record ChangedFile(
     string Filename,
     string Status,
     int Additions,
     int Deletions,
     string? Patch,
-    string? PreviousFilename)
+    string? PreviousFilename,
+    string? RawUrl = null)
 {
     /// <summary>Total lines touched. The treemap uses this as box area.</summary>
     public int Changes => Additions + Deletions;

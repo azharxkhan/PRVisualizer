@@ -30,6 +30,7 @@ type RawFile = {
   changes: number
   patch?: string
   previous_filename?: string
+  raw_url?: string
 }
 
 function headers(token: string | null): HeadersInit {
@@ -105,6 +106,7 @@ export async function fetchPrFilesDirect(
         patch: file.patch ?? null,
         previousFilename: file.previous_filename ?? null,
         hasPatch: typeof file.patch === 'string',
+        rawUrl: file.raw_url ?? null,
       })
     }
 

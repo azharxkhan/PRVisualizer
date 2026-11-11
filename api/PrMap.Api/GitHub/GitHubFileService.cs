@@ -53,7 +53,9 @@ public sealed class GitHubFileService(
                 // Null for binary files and for diffs GitHub declines to render. Kept null so
                 // the diff panel can tell "nothing to show" from an empty patch.
                 Patch: file.Patch,
-                PreviousFilename: file.PreviousFileName));
+                PreviousFilename: file.PreviousFileName,
+                // Only used to show an image in the panel; for text files nothing fetches it.
+                RawUrl: file.RawUrl));
         }
 
         var truncated = files.Count >= GitHubFileLimit;
