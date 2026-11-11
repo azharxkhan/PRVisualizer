@@ -32,6 +32,10 @@ request link and it draws. See [Hosting](#hosting) for what that build can and c
 All three share one palette: green added, amber modified, red removed, violet renamed. Clicking
 a file in either the map or the list opens its diff beside it.
 
+The whole page is one screen: the chrome takes the height it needs and the map takes the rest,
+so nothing about a pull request is below the fold. Under 620px of window height that would
+leave a map too short to read, so the page goes back to scrolling instead.
+
 A file whose box would come out narrower than 20px leaves the map and appears as a labelled
 chip under it. An area floor cannot fix that on its own, because the squarify algorithm can
 spend the area on a tall thin ribbon that is unreadable and all but unclickable; moving those
@@ -42,7 +46,8 @@ files out keeps the rest of the map honest and gives them a hit target you can a
 | File | What the panel offers |
 | --- | --- |
 | Anything with a patch | The diff, with old and new line numbers |
-| `.md`, `.markdown`, `.mdx` | **Source** and **Rendered**, so a README reads as a README |
+| Any text file | **File**: the whole thing at the head commit, numbered — the diff shows hunks only |
+| `.md`, `.markdown`, `.mdx` | **Rendered** as well, so a README reads as a README |
 | `.png`, `.jpg`, `.gif`, `.webp`, `.svg` | The image itself, on a chequerboard so transparency shows |
 | `.pdf`, fonts, archives, video, binaries | Named for what it is, with a link to GitHub |
 

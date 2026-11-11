@@ -1,7 +1,8 @@
 import { hierarchy, treemap, treemapSquarify, type HierarchyRectangularNode } from 'd3-hierarchy'
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { ChangedFile } from '../api/types'
 import { areaFor } from './area'
+import { fitLabel, measurerFor } from './fitLabel'
 import { groupByFolder, type TreeNode } from './groupByFolder'
 import { statusColour } from './statusColour'
 
@@ -22,6 +23,14 @@ const MIN_HIT = 20
 
 /** One re-layout is usually enough; the cap stops a pathological pull request looping. */
 const MAX_PASSES = 3
+
+/** Label inset, left and right, so a cut label does not touch the cell's edge. */
+const LABEL_PADDING = 12
+
+/** Must match .treemap .file-label, .file-count and .folder-label in App.css. */
+const LABEL_FONT = '500 12px ui-sans-serif, system-ui, sans-serif'
+const COUNT_FONT = '11px ui-monospace, Consolas, monospace'
+const FOLDER_FONT = '600 10px ui-sans-serif, system-ui, sans-serif'
 
 type Size = { width: number; height: number }
 
@@ -64,8 +73,16 @@ type Props = {
   onSelect?: (file: ChangedFile) => void
 }
 
+/** Measuring needs a canvas, so the measurers are made once rather than per cell. */
+const measureLabel = measurerFor(LABEL_FONT)
+const measureCount = measurerFor(COUNT_FONT)
+const measureFolder = measurerFor(FOLDER_FONT)
+
 export function Treemap({ files, selected, onSelect }: Props) {
   const wrapper = useRef<HTMLDivElement>(null)
+  // Clip paths need ids unique on the page. useId's colons are legal in an id but awkward
+  // inside url(), so they come out.
+  const clipPrefix = useId().replace(/:/g, '')
   const [size, setSize] = useState({ width: 0, height: 0 })
 
   useLayoutEffect(() => {
@@ -123,10 +140,18 @@ export function Treemap({ files, selected, onSelect }: Props) {
                   const room = width > LABEL_MIN_WIDTH && height > FOLDER_LABEL_HEIGHT * 2
                   return (
                     <g key={`folder-${index}`} transform={`translate(${node.x0},${node.y0})`}>
+                      <clipPath id={`${clipPrefix}-f${index}`}>
+                        <rect width={width} height={height} rx={3} />
+                      </clipPath>
                       <rect className="folder" width={width} height={height} rx={3} />
                       {room && (
-                        <text className="folder-label" x={7} y={13} clipPath="none">
-                          {data.name}
+                        <text
+                          className="folder-label"
+                          x={7}
+                          y={13}
+                          clipPath={`url(#${clipPrefix}-f${index})`}
+                        >
+                          {fitLabel(data.name, width - LABEL_PADDING - 2, measureFolder)}
                         </text>
                       )}
                     </g>
@@ -154,6 +179,15 @@ export function Treemap({ files, selected, onSelect }: Props) {
                     }}
                   >
                     <title>{label}</title>
+                    {/*
+                      Truncation above keeps labels tidy, but it depends on measuring a font
+                      the browser may substitute, and the label's halo stroke adds width the
+                      measure does not know about. The clip is the guarantee: nothing this
+                      cell draws can ever reach its neighbour.
+                    */}
+                    <clipPath id={`${clipPrefix}-${index}`}>
+                      <rect width={width} height={height} rx={4} />
+                    </clipPath>
                     <rect
                       width={width}
                       height={height}
@@ -162,13 +196,27 @@ export function Treemap({ files, selected, onSelect }: Props) {
                       fillOpacity={0.9}
                     />
                     {width > LABEL_MIN_WIDTH && height > LABEL_MIN_HEIGHT && (
-                      <text className="file-label" x={6} y={16}>
-                        {data.name}
+                      <text
+                        className="file-label"
+                        x={6}
+                        y={16}
+                        clipPath={`url(#${clipPrefix}-${index})`}
+                      >
+                        {fitLabel(data.name, width - LABEL_PADDING, measureLabel)}
                       </text>
                     )}
                     {width > LABEL_MIN_WIDTH && height > COUNT_MIN_HEIGHT && (
-                      <text className="file-count" x={6} y={31}>
-                        +{file.additions} −{file.deletions}
+                      <text
+                        className="file-count"
+                        x={6}
+                        y={31}
+                        clipPath={`url(#${clipPrefix}-${index})`}
+                      >
+                        {fitLabel(
+                          `+${file.additions} −${file.deletions}`,
+                          width - LABEL_PADDING,
+                          measureCount,
+                        )}
                       </text>
                     )}
                   </g>
