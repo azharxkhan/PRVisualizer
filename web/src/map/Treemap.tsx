@@ -6,9 +6,11 @@ import { groupByFolder, type TreeNode } from './groupByFolder'
 import { statusColour } from './statusColour'
 
 /** Below this a cell has no room for a label without overflowing its own box. */
-const LABEL_MIN_WIDTH = 46
-const LABEL_MIN_HEIGHT = 18
-const FOLDER_LABEL_HEIGHT = 16
+const LABEL_MIN_WIDTH = 56
+const LABEL_MIN_HEIGHT = 22
+/** A second line of counts only fits once the cell is this tall. */
+const COUNT_MIN_HEIGHT = 40
+const FOLDER_LABEL_HEIGHT = 18
 
 type Props = {
   files: ChangedFile[]
@@ -77,7 +79,7 @@ export function Treemap({ files, selected, onSelect }: Props) {
                   <g key={`folder-${index}`} transform={`translate(${node.x0},${node.y0})`}>
                     <rect className="folder" width={width} height={height} rx={3} />
                     {room && (
-                      <text className="folder-label" x={5} y={12} clipPath="none">
+                      <text className="folder-label" x={7} y={13} clipPath="none">
                         {data.name}
                       </text>
                     )}
@@ -109,13 +111,18 @@ export function Treemap({ files, selected, onSelect }: Props) {
                   <rect
                     width={width}
                     height={height}
-                    rx={2}
+                    rx={4}
                     fill={statusColour(file.status)}
-                    fillOpacity={0.85}
+                    fillOpacity={0.9}
                   />
                   {width > LABEL_MIN_WIDTH && height > LABEL_MIN_HEIGHT && (
-                    <text className="file-label" x={4} y={13}>
+                    <text className="file-label" x={6} y={16}>
                       {data.name}
+                    </text>
+                  )}
+                  {width > LABEL_MIN_WIDTH && height > COUNT_MIN_HEIGHT && (
+                    <text className="file-count" x={6} y={31}>
+                      +{file.additions} −{file.deletions}
                     </text>
                   )}
                 </g>

@@ -1,155 +1,292 @@
 main {
-  max-width: 1100px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 32px 20px 64px;
+  padding: 28px 24px 72px;
 }
+
+/* ---------- header ---------- */
 
 header {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  align-items: start;
+  align-items: center;
   justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 h1 {
-  color: var(--text-h);
-  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+h1::before {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--accent), #22d3ee);
+  box-shadow: var(--shadow-sm);
+}
+
+.tagline {
+  font-size: 15px;
+  color: var(--text);
 }
 
 .sign-in {
   flex: none;
   padding: 8px 14px;
-  font-size: 15px;
-  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--accent-text);
   text-decoration: none;
   background: var(--accent-bg);
   border: 1px solid var(--accent-border);
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.sign-in:hover {
+  border-color: var(--accent);
 }
 
 .signed-in {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin: 0;
-  font-size: 15px;
-
-  span {
-    font-family: var(--mono);
-    color: var(--text-h);
-  }
-
-  button {
-    font: inherit;
-    font-size: 14px;
-    padding: 6px 10px;
-    color: var(--text);
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--text-h);
-    }
-  }
+  font-size: 14px;
 }
 
-.tagline {
-  margin-top: 0;
+.signed-in span {
+  font-family: var(--mono);
+  color: var(--text-h);
 }
+
+.signed-in button {
+  font: inherit;
+  padding: 6px 10px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.signed-in button:hover {
+  color: var(--text-h);
+  border-color: var(--border-strong);
+}
+
+/* ---------- search ---------- */
 
 form {
   display: flex;
-  gap: 8px;
-  margin: 24px 0;
+  gap: 10px;
+  margin: 24px 0 20px;
+}
 
-  input {
-    flex: 1;
-    min-width: 0;
-    font: inherit;
-    font-family: var(--mono);
-    font-size: 15px;
-    padding: 10px 12px;
-    color: var(--text-h);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 6px;
+form input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 14px;
+  padding: 11px 14px;
+  color: var(--text-h);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
 
-    &:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 1px;
-    }
-  }
+form input::placeholder {
+  color: var(--text-dim);
+}
 
-  button {
-    font: inherit;
-    font-size: 16px;
-    padding: 10px 18px;
-    color: var(--accent);
-    background: var(--accent-bg);
-    border: 1px solid var(--accent-border);
-    border-radius: 6px;
-    cursor: pointer;
+form input:focus-visible {
+  outline: none;
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
 
-    &:disabled {
-      cursor: progress;
-      opacity: 0.6;
-    }
-  }
+form button {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  padding: 11px 22px;
+  color: #fff;
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+}
+
+form button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+form button:disabled {
+  cursor: progress;
+  opacity: 0.6;
 }
 
 .error {
   padding: 12px 14px;
+  font-size: 15px;
+  color: var(--text-h);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
-  border-radius: 6px;
-  background: var(--code-bg);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
 }
 
+/* ---------- summary ---------- */
+
 .summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 32px;
-  margin: 0 0 16px;
-  padding: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  margin: 0 0 14px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--border);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
 
-  dt {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
+.summary div {
+  padding: 14px 18px;
+  background: var(--surface);
+}
 
-  dd {
-    margin: 2px 0 0;
-    font-size: 26px;
-    color: var(--text-h);
-  }
+.summary dt {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-dim);
+}
 
-  .added {
-    color: #2da44e;
-  }
+.summary dd {
+  margin: 4px 0 0;
+  font-size: 24px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
 
-  .removed {
-    color: #cf222e;
-  }
+.summary .added {
+  color: var(--green);
+}
+
+.summary .removed {
+  color: var(--red);
+}
+
+/* One plain sentence, so the numbers above do not have to be read as a puzzle. */
+.readout {
+  margin: 0 0 18px;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.readout strong {
+  color: var(--text-h);
+  font-weight: 600;
 }
 
 .banner {
   margin: 0 0 16px;
   padding: 10px 14px;
-  font-size: 15px;
-  border: 1px dashed var(--accent-border);
-  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-sm);
   background: var(--accent-bg);
 }
 
-.split[hidden],
+/* ---------- toolbar: tabs + legend ---------- */
+
+.toolbar {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.tabs button {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 16px;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.tabs button:hover {
+  color: var(--text-h);
+}
+
+.tabs button.current {
+  color: var(--text-h);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 .legend[hidden] {
-  /* display on a class beats the browser's own rule for [hidden], so say it here. */
+  display: none;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+/* ---------- panels ---------- */
+
+.split[hidden] {
   display: none;
 }
 
@@ -157,218 +294,322 @@ form {
   display: grid;
   gap: 16px;
   grid-template-columns: 1fr;
+}
 
-  /* Below this the two columns would each be too narrow to read, so the panel stacks under. */
-  @media (min-width: 900px) {
-    &.open {
-      grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
-    }
+/* Below this the two columns would each be too narrow to read, so the panel stacks under. */
+@media (min-width: 900px) {
+  .split.open {
+    grid-template-columns: minmax(0, 1.4fr) minmax(360px, 1fr);
   }
 }
 
-.tabs {
+.treemap {
+  height: min(72vh, 660px);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.treemap .folder {
+  fill: var(--surface);
+  stroke: var(--border);
+}
+
+.treemap .folder-label {
+  font: 600 10px/1 var(--sans);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  fill: var(--text-dim);
+}
+
+.treemap .file-label {
+  font: 500 12px/1 var(--sans);
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+.treemap .file-count {
+  font: 11px/1 var(--mono);
+  fill: rgba(255, 255, 255, 0.85);
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.5);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+.treemap .file rect {
+  transition: fill-opacity 120ms ease;
+}
+
+.treemap .file {
+  cursor: pointer;
+}
+
+.treemap .file:hover rect,
+.treemap .file:focus-visible rect {
+  fill-opacity: 1;
+  stroke: var(--text-h);
+  stroke-width: 1.5px;
+}
+
+.treemap .file:focus-visible {
+  outline: none;
+}
+
+.treemap .file.selected rect {
+  fill-opacity: 1;
+  stroke: var(--text-h);
+  stroke-width: 2.5px;
+}
+
+/* ---------- file list ---------- */
+
+.files {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  max-height: min(72vh, 660px);
+  overflow-y: auto;
+}
+
+.files li + li {
+  border-top: 1px solid var(--border);
+}
+
+.files button {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto minmax(80px, 160px);
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 16px;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.files button:hover,
+.files button:focus-visible {
+  background: var(--surface-2);
+  outline: none;
+}
+
+.files .current button {
+  background: var(--accent-bg);
+}
+
+.files .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.files .name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-h);
+}
+
+.files .dir {
+  color: var(--text-dim);
+}
+
+.files .nums {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.files .nums .added {
+  color: var(--green);
+}
+
+.files .nums .removed {
+  color: var(--red);
+  margin-left: 6px;
+}
+
+/* A bar per file, so the biggest changes are obvious without reading a single number. */
+.files .bar {
   display: flex;
-  gap: 4px;
-  margin-bottom: 12px;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--surface-2);
+}
 
-  button {
-    font: inherit;
-    font-size: 15px;
-    padding: 6px 14px;
-    color: var(--text);
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
+.files .bar i {
+  display: block;
+  height: 100%;
+}
 
-    &:hover {
-      color: var(--text-h);
-    }
+.files .bar .add {
+  background: var(--green);
+}
 
-    &.current {
-      color: var(--accent);
-      background: var(--accent-bg);
-      border-color: var(--accent-border);
-    }
-  }
+.files .bar .del {
+  background: var(--red);
 }
 
 /* Labels are HTML over the SVG, so long paths can ellipsize the way text should. */
 .edges {
   position: relative;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 0;
-
-  svg {
-    display: block;
-    width: 100%;
-  }
-
-  ul {
-    position: absolute;
-    top: 8px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    font: 12px/1 var(--mono);
-  }
-
-  li {
-    position: absolute;
-    max-width: 24ch;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    transform: translateY(-50%);
-    color: var(--text-h);
-  }
-
-  .importers {
-    left: 12px;
-    right: 55%;
-
-    li {
-      left: 0;
-    }
-  }
-
-  .modules {
-    left: 55%;
-    right: 12px;
-
-    li {
-      right: 0;
-      text-align: right;
-    }
-
-    .external {
-      color: var(--text);
-      opacity: 0.75;
-      font-style: italic;
-    }
-  }
+  border-radius: var(--radius);
+  padding: 10px 0;
+  box-shadow: var(--shadow);
 }
 
-.treemap {
-  height: min(70vh, 640px);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+.edges svg {
+  display: block;
+  width: 100%;
+}
+
+.edges ul {
+  position: absolute;
+  top: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: 12px/1 var(--mono);
+}
+
+.edges li {
+  position: absolute;
+  max-width: 26ch;
   overflow: hidden;
-
-  .folder {
-    fill: var(--code-bg);
-    stroke: var(--border);
-  }
-
-  .folder-label {
-    font: 11px/1 var(--mono);
-    fill: var(--text);
-  }
-
-  .file-label {
-    font: 11px/1 var(--mono);
-    fill: #fff;
-    paint-order: stroke;
-    stroke: rgba(0, 0, 0, 0.45);
-    stroke-width: 2.5px;
-    pointer-events: none;
-  }
-
-  .file {
-    cursor: pointer;
-
-    &:hover rect,
-    &:focus-visible rect {
-      fill-opacity: 1;
-      stroke: var(--text-h);
-    }
-
-    &:focus-visible {
-      outline: none;
-    }
-
-    &.selected rect {
-      fill-opacity: 1;
-      stroke: var(--text-h);
-      stroke-width: 2px;
-    }
-  }
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  color: var(--text-h);
 }
+
+.edges .importers {
+  left: 14px;
+  right: 55%;
+}
+
+.edges .importers li {
+  left: 0;
+}
+
+.edges .modules {
+  left: 55%;
+  right: 14px;
+}
+
+.edges .modules li {
+  right: 0;
+  text-align: right;
+}
+
+.edges .modules .external {
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* ---------- diff ---------- */
 
 .diff {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  height: min(70vh, 640px);
+  height: min(72vh, 660px);
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
 
-  > header {
-    display: flex;
-    gap: 12px;
-    align-items: start;
-    justify-content: space-between;
-    padding: 12px 14px;
-    border-bottom: 1px solid var(--border);
+.diff > header {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
 
-    p {
-      margin: 0;
-    }
-  }
+.diff > header p {
+  margin: 0;
+}
 
-  .path {
-    font-family: var(--mono);
-    font-size: 14px;
-    color: var(--text-h);
-    overflow-wrap: anywhere;
-  }
+.diff .path {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text-h);
+  overflow-wrap: anywhere;
+}
 
-  .renamed {
-    margin-top: 2px;
-    font-size: 13px;
-  }
+.diff .renamed {
+  margin-top: 2px;
+  font-size: 13px;
+}
 
-  .counts {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 6px;
-    font-size: 14px;
-  }
+.diff .counts {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 8px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
 
-  .chip {
-    padding: 1px 8px;
-    font-size: 12px;
-    color: #fff;
-    border-radius: 999px;
-  }
+.diff .chip {
+  padding: 2px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #fff;
+  border-radius: 999px;
+}
 
-  .added {
-    color: #2da44e;
-  }
+.diff .added {
+  color: var(--green);
+}
 
-  .removed {
-    color: #cf222e;
-  }
+.diff .removed {
+  color: var(--red);
+}
 
-  .close {
-    flex: none;
-    width: 28px;
-    height: 28px;
-    font-size: 20px;
-    line-height: 1;
-    color: var(--text);
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    cursor: pointer;
+.diff .close {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+}
 
-    &:hover {
-      border-color: var(--border);
-      color: var(--text-h);
-    }
-  }
+.diff .close:hover {
+  border-color: var(--border-strong);
+  color: var(--text-h);
 }
 
 /* The diff scrolls inside the panel, so the page never grows with the size of a patch. */
@@ -376,87 +617,66 @@ form {
   flex: 1;
   overflow: auto;
   padding-bottom: 8px;
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font: 12px/1.5 var(--mono);
-  }
+.diff-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font: 12px/1.6 var(--mono);
+}
 
-  caption {
-    padding: 6px 14px;
-    text-align: left;
-    color: var(--text);
-    background: var(--code-bg);
-    border-block: 1px solid var(--border);
-  }
+.diff-body caption {
+  padding: 6px 14px;
+  text-align: left;
+  font-size: 11px;
+  color: var(--text-dim);
+  background: var(--code-bg);
+  border-block: 1px solid var(--border);
+}
 
-  td {
-    padding: 0 6px;
-    vertical-align: top;
-    white-space: pre-wrap;
-    overflow-wrap: anywhere;
-  }
+.diff-body td {
+  padding: 0 6px;
+  vertical-align: top;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 
-  .gutter {
-    width: 1%;
-    /* The code column wraps anywhere, which would otherwise break "14" across two lines. */
-    white-space: nowrap;
-    overflow-wrap: normal;
-    text-align: right;
-    color: var(--text);
-    opacity: 0.6;
-    user-select: none;
-  }
+.diff-body .gutter {
+  width: 1%;
+  /* The code column wraps anywhere, which would otherwise break "14" across two lines. */
+  white-space: nowrap;
+  overflow-wrap: normal;
+  text-align: right;
+  color: var(--text-dim);
+  user-select: none;
+}
 
-  .code {
-    color: var(--text-h);
-  }
+.diff-body .code {
+  color: var(--text-h);
+}
 
-  .add {
-    background: rgba(45, 164, 78, 0.15);
-  }
+.diff-body .add {
+  background: rgba(26, 127, 55, 0.14);
+}
 
-  .remove {
-    background: rgba(207, 34, 46, 0.15);
-  }
+.diff-body .remove {
+  background: rgba(207, 34, 46, 0.14);
 }
 
 .fallback {
   margin: 0;
-  padding: 16px 14px;
+  padding: 18px 16px;
   font-size: 15px;
-
-  a {
-    color: var(--accent);
-  }
 }
 
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 20px;
-  margin: 12px 0 0;
-  padding: 0;
-  font-size: 14px;
-  list-style: none;
-
-  li {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-}
-
-.swatch {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+.fallback a {
+  color: var(--accent-text);
 }
 
 .hint {
-  margin-top: 8px;
-  font-size: 14px;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-dim);
 }
 
 .visually-hidden {
@@ -466,4 +686,46 @@ form {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* ---------- static build: the user's own token ---------- */
+
+.token {
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) auto;
+  gap: 8px;
+  margin: 0;
+  max-width: 440px;
+}
+
+.token input {
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 8px 12px;
+  color: var(--text-h);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.token button {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 16px;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.token-note {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+.token-note a {
+  color: var(--accent-text);
 }
