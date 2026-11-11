@@ -36,7 +36,7 @@ export function TokenBox() {
 
   return (
     <form
-      className="token"
+      className="token-form"
       onSubmit={(event) => {
         event.preventDefault()
         writeToken(value)
@@ -57,7 +57,7 @@ export function TokenBox() {
         onChange={(event) => setValue(event.target.value)}
       />
       <button type="submit">Save</button>
-      <p className="token-note">
+      <p className="token-form-note">
         Stored in this browser only, and sent only to api.github.com. A{' '}
         <a href={NEW_TOKEN} target="_blank" rel="noreferrer">
           fine-grained token

@@ -737,7 +737,11 @@ form button:disabled {
 
 /* ---------- static build: the user's own token ---------- */
 
-.token {
+/*
+ * Named token-form, not token: Prism marks every highlighted span with .token, and a bare
+ * .token rule here turned each keyword and string in the diff into its own grid.
+ */
+.token-form {
   display: grid;
   grid-template-columns: minmax(200px, 300px) auto;
   gap: 8px;
@@ -745,7 +749,7 @@ form button:disabled {
   max-width: 440px;
 }
 
-.token input {
+.token-form input {
   font-family: var(--mono);
   font-size: 13px;
   padding: 8px 12px;
@@ -755,7 +759,7 @@ form button:disabled {
   border-radius: var(--radius-sm);
 }
 
-.token button {
+.token-form button {
   font: inherit;
   font-size: 14px;
   padding: 8px 16px;
@@ -766,14 +770,14 @@ form button:disabled {
   cursor: pointer;
 }
 
-.token-note {
+.token-form-note {
   grid-column: 1 / -1;
   font-size: 12px;
   line-height: 1.45;
   color: var(--text-dim);
 }
 
-.token-note a {
+.token-form-note a {
   color: var(--accent-text);
 }
 
@@ -1023,11 +1027,67 @@ form button:disabled {
   }
 }
 
-/* The whole-file view: one gutter instead of the diff's two, and no row colouring. */
-.diff-body .whole-file .gutter {
-  padding-right: 10px;
+/*
+ * The whole-file view. The code is one string so that highlighting sees constructs that span
+ * lines, which means the line numbers cannot live in a table beside it: they are their own
+ * column, kept in step by sharing the line-height and by neither column wrapping.
+ */
+.whole-file {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
-.diff-body .whole-file tr:hover .code {
-  background: var(--surface-2);
+.file-caption {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 6px 14px;
+  font: 11px/1.5 var(--sans);
+  color: var(--text-dim);
+  background: var(--code-bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.code-scroll {
+  display: flex;
+  align-items: flex-start;
+  overflow: auto;
+  font: 12px/1.6 var(--mono);
+}
+
+.code-scroll .line-numbers,
+.code-scroll .code-block {
+  margin: 0;
+  padding: 8px 0;
+  font: inherit;
+  white-space: pre;
+}
+
+.code-scroll .line-numbers {
+  position: sticky;
+  left: 0;
+  flex: none;
+  padding-right: 12px;
+  padding-left: 14px;
+  text-align: right;
+  color: var(--text-dim);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  user-select: none;
+}
+
+.code-scroll .code-block {
+  flex: 1;
+  padding-right: 16px;
+  padding-left: 12px;
+  color: var(--text-h);
+  background: none;
+}
+
+.code-scroll code {
+  font: inherit;
+  padding: 0;
+  background: none;
+  color: inherit;
 }

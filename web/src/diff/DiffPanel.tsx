@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import type { ChangedFile } from '../api/types'
 import { statusColour } from '../map/statusColour'
 import { binaryLabel, kindOf } from './fileKind'
+import { highlight, languageFor } from './highlight'
 import { renderMarkdown } from './markdown'
 import { previewFor } from './preview'
 import { rawContentUrl } from './rawContentUrl'
@@ -22,6 +23,41 @@ type Props = {
  */
 type Mode = 'diff' | 'file' | 'rendered' | 'image'
 
+/**
+ * The whole file in one block, so a construct that spans lines — a block comment, a template
+ * string, a heredoc — is coloured as the single token it actually is. Line numbers sit in a
+ * column beside it rather than in a table, which is what lets the code stay one string.
+ */
+function WholeFileCode({ text, language }: { text: string; language: string | null }) {
+  const html = useMemo(() => highlight(text, language), [text, language])
+
+  return (
+    <pre className="code-block">
+      {html === null ? (
+        <code>{text}</code>
+      ) : (
+        // Prism escapes everything it does not tokenise, so its output is safe to inject.
+        <code dangerouslySetInnerHTML={{ __html: html }} />
+      )}
+    </pre>
+  )
+}
+
+/**
+ * One diff line. Each line is highlighted on its own, because the added and removed lines of a
+ * patch are not a continuous piece of source: a construct opened on one line and closed three
+ * lines later may have the lines between it left out entirely. The cost is that a block comment
+ * or a multi-line string inside a hunk is coloured line by line rather than as one token. The
+ * File view has no such problem, and is the one to read when that matters.
+ */
+function CodeCell({ content, language }: { content: string; language: string | null }) {
+  const html = useMemo(() => highlight(content, language), [content, language])
+
+  if (html === null) return <td className="code">{content || ' '}</td>
+
+  return <td className="code" dangerouslySetInnerHTML={{ __html: html || ' ' }} />
+}
+
 export function DiffPanel({ file, htmlUrl, onClose }: Props) {
   /**
    * The chosen view is remembered against the file it was chosen for, so clicking a different
@@ -40,6 +76,7 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
 
   const kind = kindOf(file.filename)
   const preview = previewFor(file)
+  const language = languageFor(file.filename)
 
   // A removed file has no contents at the head commit, so there is nothing to fetch or show.
   const present = file.status !== 'removed'
@@ -69,10 +106,17 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
     () => (raw.kind === 'loaded' && mode === 'rendered' ? renderMarkdown(raw.text) : null),
     [raw, mode],
   )
-  const lines = useMemo(
-    () => (raw.kind === 'loaded' && mode === 'file' ? raw.text.split('\n') : null),
+  /**
+   * A trailing newline ends the last line, it does not start another one. Counting it would
+   * give the gutter one number more than the code block draws, and the two columns would sit
+   * a line apart by the bottom of a long file.
+   */
+  const body = useMemo(
+    () =>
+      raw.kind === 'loaded' && mode === 'file' ? raw.text.replace(/\r?\n$/, '') : null,
     [raw, mode],
   )
+  const lines = useMemo(() => (body === null ? null : body.split('\n')), [body])
 
   return (
     <aside className="diff" aria-label={`Diff for ${file.filename}`}>
@@ -124,21 +168,20 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
           <div className="markdown" dangerouslySetInnerHTML={{ __html: html }} />
         )}
 
-        {lines !== null && (
-          <table className="whole-file">
-            <caption>
+        {lines !== null && raw.kind === 'loaded' && (
+          <div className="whole-file">
+            <p className="file-caption">
               The whole file at this pull request’s head commit, {format.format(lines.length)}{' '}
-              {lines.length === 1 ? 'line' : 'lines'}.
-            </caption>
-            <tbody>
-              {lines.map((line, index) => (
-                <tr key={index}>
-                  <td className="gutter">{index + 1}</td>
-                  <td className="code">{line || ' '}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              {lines.length === 1 ? 'line' : 'lines'}
+              {language && <> · {language}</>}.
+            </p>
+            <div className="code-scroll">
+              <pre className="line-numbers" aria-hidden="true">
+                {lines.map((_, index) => index + 1).join('\n')}
+              </pre>
+              <WholeFileCode text={body ?? ''} language={language} />
+            </div>
+          </div>
         )}
 
         {mode === 'image' && rawUrl && (
@@ -158,7 +201,7 @@ export function DiffPanel({ file, htmlUrl, onClose }: Props) {
                   <tr key={index} className={line.kind}>
                     <td className="gutter">{line.oldNumber ?? ''}</td>
                     <td className="gutter">{line.newNumber ?? ''}</td>
-                    <td className="code">{line.content || ' '}</td>
+                    <CodeCell content={line.content} language={language} />
                   </tr>
                 ))}
               </tbody>

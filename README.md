@@ -45,11 +45,18 @@ files out keeps the rest of the map honest and gives them a hit target you can a
 
 | File | What the panel offers |
 | --- | --- |
-| Anything with a patch | The diff, with old and new line numbers |
-| Any text file | **File**: the whole thing at the head commit, numbered — the diff shows hunks only |
+| Anything with a patch | The diff, with old and new line numbers, syntax highlighted |
+| Any text file | **File**: the whole thing at the head commit, numbered and highlighted — the diff shows hunks only |
 | `.md`, `.markdown`, `.mdx` | **Rendered** as well, so a README reads as a README |
 | `.png`, `.jpg`, `.gif`, `.webp`, `.svg` | The image itself, on a chequerboard so transparency shows |
 | `.pdf`, fonts, archives, video, binaries | Named for what it is, with a link to GitHub |
+
+Syntax colours cover TypeScript, JavaScript, C#, Java, Kotlin, Python, Rust, Go, C, C++,
+JSON, YAML, TOML, INI, Bash, SQL, Markdown, HTML/XML (which covers `.csproj` and `.svg`) and
+CSS. A file whose extension is not on that list is shown as plain text rather than guessed at.
+The **File** view highlights the whole file in one pass, so a block comment or a multi-line
+string is coloured as the single token it is; the diff can only highlight line by line, because
+the added and removed lines of a patch are not a continuous piece of source.
 
 Rendered markdown comes from a stranger's repository, so it is untrusted input. Raw HTML in the
 source is dropped rather than passed through, and link and image URLs must be `http(s)`, which
@@ -308,6 +315,7 @@ docs/                 diagrams used in this README
 | Frontend | React + TypeScript via Vite | Fast dev server |
 | Map layout | `d3-hierarchy` (`treemap`) | Does the box packing; the SVG is drawn by hand |
 | Markdown | `marked` | Renders the markdown view; raw HTML is dropped, not sanitised after the fact |
+| Syntax colours | `prismjs` | 20 grammars, loaded explicitly; the palette is this app's own, not a Prism theme |
 | Diff view | Own component | GitHub sends a patch as plain text; rendering it avoids a heavy dependency |
 
 .NET 10 rather than 8: .NET 8 loses security support in November 2026, and .NET 10 is supported
