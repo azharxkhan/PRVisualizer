@@ -12,6 +12,11 @@ export type ChangedFile = {
   /** additions + deletions. The treemap uses this as box area. */
   changes: number
   hasPatch: boolean
+  /**
+   * The file's contents at the head commit, when GitHub gave one. Used to show an image or
+   * render a markdown file; optional, because nothing else in the app needs it.
+   */
+  rawUrl?: string | null
 }
 
 /** Mirrors PrMap.Api.Models.PullRequestFiles. */

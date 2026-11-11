@@ -32,6 +32,25 @@ request link and it draws. See [Hosting](#hosting) for what that build can and c
 All three share one palette: green added, amber modified, red removed, violet renamed. Clicking
 a file in either the map or the list opens its diff beside it.
 
+A file whose box would come out narrower than 20px leaves the map and appears as a labelled
+chip under it. An area floor cannot fix that on its own, because the squarify algorithm can
+spend the area on a tall thin ribbon that is unreadable and all but unclickable; moving those
+files out keeps the rest of the map honest and gives them a hit target you can actually hit.
+
+### The panel reads the file, not just the diff
+
+| File | What the panel offers |
+| --- | --- |
+| Anything with a patch | The diff, with old and new line numbers |
+| `.md`, `.markdown`, `.mdx` | **Source** and **Rendered**, so a README reads as a README |
+| `.png`, `.jpg`, `.gif`, `.webp`, `.svg` | The image itself, on a chequerboard so transparency shows |
+| `.pdf`, fonts, archives, video, binaries | Named for what it is, with a link to GitHub |
+
+Rendered markdown comes from a stranger's repository, so it is untrusted input. Raw HTML in the
+source is dropped rather than passed through, and link and image URLs must be `http(s)`, which
+removes the script and `javascript:` vectors without a sanitiser dependency. Those two rules are
+the subject of most of `markdown.test.ts`.
+
 ## What we are building
 
 ### The map view (Phases 3 and 4)
@@ -98,10 +117,25 @@ it in stages:
 
 ![The Imports tab: changed files in a left column, the modules they import on the right, green curves between them, with vitest and react in a muted band below](docs/import-edges.png)
 
-  That is this repository's own #2, where the diff panel moved into `web/src/diff/`. TypeScript,
-  JavaScript and C# are read; a relative specifier is internal, and for C# a namespace the
-  repository declares itself is internal, which sorts `System.*` and `Octokit` out as packages
-  without a list to maintain.
+  That is this repository's own #2, where the diff panel moved into `web/src/diff/`.
+
+  Languages read, and how each one decides a specifier is internal rather than a package:
+
+  | Language | Import syntax read | Internal when |
+  | --- | --- | --- |
+  | TypeScript, JavaScript | `import`, `export … from`, `require()` | the specifier is relative |
+  | C# | `using`, `global using`, `using static` | the root namespace is one the PR declares |
+  | Java, Kotlin | `import`, `import static` | the root package is one the PR declares |
+  | Python | `import a.b`, `from a.b import x` | the specifier is relative (`.models`) |
+  | Rust | `use`, `pub use`, `extern crate` | it starts with `crate`, `super` or `self` |
+  | Go | `import "x"`, and the lines of an `import ( … )` block | never: Go has no relative imports |
+  | C, C++ | `#include "x"` and `#include <x>` | the include is quoted, not angled |
+
+  The internal test is always something the patch itself carries. That is why Go has none: its
+  imports are all absolute, and deciding would need the module name from `go.mod`, which a
+  patch does not supply. For the same reason a Python `import mypackage.thing` counts as
+  external, because nothing in the diff separates the project's own top-level package from one
+  in site-packages.
 - Call edges inside a module. Needs full file contents and an AST walk, so it gets capped by file
   size, language and count.
 - Movement detection. Build the edge set at both commits and compare: same target with a
@@ -133,6 +167,10 @@ GitHub's "list pull request files" endpoint shapes most of these.
 | No patch, no line changes | Box renders at a minimum size, panel says no preview available |
 | No patch, but lines changed | "Too big to preview", with a link to GitHub |
 | Renamed file | Box in the renamed colour, old and new name both shown in the panel |
+| Box too small to click | The file moves to the chip strip under the map |
+| Image file | The image itself, from `raw.githubusercontent.com` |
+| Removed file | No rendered or image view: there are no contents at the head commit |
+| Markdown in a private repo | The rendered view needs the raw file to be reachable; the diff still works |
 | PR not found or no access | "That pull request could not be found. It may be private, or the link may be wrong." |
 | GitHub rate limit hit | "GitHub is busy, try again in a minute" |
 
@@ -264,6 +302,7 @@ docs/                 diagrams used in this README
 | Cache | `IMemoryCache` | Saves API quota on repeat views |
 | Frontend | React + TypeScript via Vite | Fast dev server |
 | Map layout | `d3-hierarchy` (`treemap`) | Does the box packing; the SVG is drawn by hand |
+| Markdown | `marked` | Renders the markdown view; raw HTML is dropped, not sanitised after the fact |
 | Diff view | Own component | GitHub sends a patch as plain text; rendering it avoids a heavy dependency |
 
 .NET 10 rather than 8: .NET 8 loses security support in November 2026, and .NET 10 is supported
